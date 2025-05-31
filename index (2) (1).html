@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Business Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .glass-card {
+      backdrop-filter: blur(15px);
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      padding: 2rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    input {
+      background: transparent;
+      border-bottom: 1px solid white;
+      outline: none;
+      color: white;
+      width: 100%;
+      text-align: center;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .readonly input {
+      border: none;
+      pointer-events: none;
+    }
+
+    #profile-pic {
+      border: 4px solid white;
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 15px white;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .button-group {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-upload { background: #facc15; color: black; }
+    .btn-save   { background: #22c55e; color: white; }
+    .btn-image  { background: #3b82f6; color: white; }
+
+    .hidden { display: none; }
+
+    /* Light mode */
+    body.light-mode {
+      background: #f8fafc;
+      color: #1e293b;
+    }
+    body.light-mode input {
+      color: #1e293b;
+    }
+    body.light-mode input::placeholder {
+      color: #6b7280;
+    }
+    body.light-mode .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      color: #1e293b;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="glass-card" id="card">
+    <img id="profile-pic" src="https://via.placeholder.com/100" alt="Profile Picture" />
+
+    <input id="name" placeholder="Your Name" class="mb-2 text-xl font-bold" />
+    <input id="title" placeholder="Your Job Title" class="mb-4 text-sm italic" />
+
+    <input id="email" placeholder="Email" class="mb-2" />
+    <input id="phone" placeholder="Phone" class="mb-2" />
+    <input id="website" placeholder="Website" class="mb-2" />
+    <input id="address" placeholder="Address" class="mb-2" />
+    <input id="facebook" placeholder="Facebook URL" class="mb-2" />
+    <input id="youtube" placeholder="YouTube URL" class="mb-2" />
+    <input id="twitter" placeholder="Twitter URL" class="mb-2" />
+    <input id="linkedin" placeholder="LinkedIn URL" class="mb-2" />
+    <input id="tiktok" placeholder="TikTok URL" class="mb-2" />
+  </div>
+
+  <div class="button-group hidden" id="edit-buttons">
+    <button class="btn-upload" onclick="document.getElementById('imageUpload').click()">📷 Upload</button>
+    <input type="file" id="imageUpload" accept="image/*" class="hidden" onchange="loadImage(event)" />
+    <button class="btn-save" onclick="saveUserData()">💾 Save Info</button>
+    <button class="btn-upload" onclick="resetForm()">♻️ Reset</button>
+    <button class="btn-upload" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    <button class="btn-image" onclick="saveCardAsImage()">📸 Save Image</button>
+  </div>
+
+  <div id="social-icons-view" class="mt-4 hidden flex justify-center space-x-6"></div>
+
+  <script>
+    const fields = [
+      "name", "title", "email", "phone", "website", "address",
+      "facebook", "youtube", "twitter", "linkedin", "tiktok"
+    ];
+
+    const socialIconsView = document.getElementById("social-icons-view");
+    const card = document.getElementById("card");
+
+    function loadImage(event) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        document.getElementById("profile-pic").src = reader.result;
+        localStorage.setItem("profileImage", reader.result);
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function saveUserData() {
+      fields.forEach(id => {
+        const value = document.getElementById(id).value.trim();
+        if (value) {
+          localStorage.setItem(id, value);
+        } else {
+          localStorage.removeItem(id);
+        }
+      });
+      alert("✅ Your information has been saved.");
+      location.reload();
+    }
+
+    function resetForm() {
+      if (confirm("⚠️ Are you sure you want to reset all fields?")) {
+        fields.forEach(id => {
+          localStorage.removeItem(id);
+          document.getElementById(id).value = "";
+        });
+        localStorage.removeItem("profileImage");
+        document.getElementById("profile-pic").src = "https://via.placeholder.com/100";
+        alert("🔄 All data has been reset.");
+        location.reload();
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("light-mode");
+      const mode = document.body.classList.contains("light-mode") ? "light" : "dark";
+      localStorage.setItem("theme", mode);
+    }
+
+    function saveCardAsImage() {
+      html2canvas(document.getElementById("card")).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "business_card.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
+
+    function addSocialLink(id, iconURL, altText) {
+      const value = document.getElementById(id).value.trim();
+      if (value) {
+        const link = document.createElement("a");
+        link.href = value;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.innerHTML = `<img src="${iconURL}" alt="${altText}" class="w-6 h-6" />`;
+        socialIconsView.appendChild(link);
+      }
+    }
+
+    window.onload = () => {
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "light") {
+        document.body.classList.add("light-mode");
+      }
+
+      const password = prompt("🔐 Please enter the password to access edit mode.\nLeave blank to view only.");
+      const isEditMode = password === "1234";
+
+      if (isEditMode) {
+        document.getElementById("edit-buttons").classList.remove("hidden");
+      } else {
+        card.classList.add("readonly");
+      }
+
+      fields.forEach(id => {
+        const saved = localStorage.getItem(id);
+        if (saved) document.getElementById(id).value = saved;
+      });
+
+      const imgData = localStorage.getItem("profileImage");
+      if (imgData) document.getElementById("profile-pic").src = imgData;
+
+      if (!isEditMode) {
+        fields.forEach(id => {
+          const field = document.getElementById(id);
+          const isSocial = ["facebook", "youtube", "twitter", "linkedin", "tiktok"].includes(id);
+          if (field.value.trim()) {
+            field.style.display = isSocial ? "none" : "block";
+          } else {
+            field.style.display = "none";
+          }
+        });
+
+        addSocialLink("facebook", "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg", "Facebook");
+        addSocialLink("youtube", "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg", "YouTube");
+        addSocialLink("twitter", "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twitter.svg", "Twitter");
+        addSocialLink("linkedin", "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/linkedin.svg", "LinkedIn");
+        addSocialLink("tiktok", "https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg", "TikTok");
+
+        socialIconsView.classList.remove("hidden");
+      }
+    };
+  </script>
+</body>
+</html>
